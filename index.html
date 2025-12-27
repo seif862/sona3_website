@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>جمعية الخير والإحسان</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+    <div id="root"></div>
+    
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+        const { Heart, Users, TrendingUp, DollarSign, Phone, Mail, Facebook, MessageCircle } = lucide;
+
+        function CharityPage() {
+            const [donations, setDonations] = useState([]);
+            const [stats, setStats] = useState({
+                total: 0,
+                donors: 0,
+                target: 100000
+            });
+            const [showContact, setShowContact] = useState(false);
+            const [loading, setLoading] = useState(true);
+
+            const SHEET_URL = 'https://script.google.com/macros/s/AKfycbxQp1A3jJ1hfQxpfkVp1DZk8fYYPolTsIjz1hzmuGK4xw8uCbjD_sEen6UF10XKIRax/exec';
+
+            useEffect(() => {
+                fetchDonations();
+            }, []);
+
+            const fetchDonations = async () => {
+                try {
+                    setLoading(true);
+                    const response = await fetch(SHEET_URL);
+                    const data = await response.json();
+                    
+                    const donationsList = data.slice(1).map(row => ({
+                        name: row[0] || 'متبرع كريم',
+                        amount: Number(row[1]) || 0,
+                        date: row[2] || new Date().toLocaleDateString('ar-EG')
+                    })).filter(d => d.amount > 0);
+                    
+                    setDonations(donationsList);
+                    
+                    const total = donationsList.reduce((sum, d) => sum + d.amount, 0);
+                    setStats(prev => ({
+                        ...prev,
+                        total: total,
+                        donors: donationsList.length
+                    }));
+                    setLoading(false);
+                } catch (error) {
+                    console.error('خطأ في جلب البيانات:', error);
+                    const mockDonations = [
+                        { name: 'أحمد محمد', amount: 500, date: '2025-12-28' },
+                        { name: 'فاطمة علي', amount: 1000, date: '2025-12-27' },
+                        { name: 'محمود حسن', amount: 250, date: '2025-12-26' },
+                    ];
+                    setDonations(mockDonations);
+                    const total = mockDonations.reduce((sum, d) => sum + d.amount, 0);
+                    setStats(prev => ({
+                        ...prev,
+                        total: total,
+                        donors: mockDonations.length
+                    }));
+                    setLoading(false);
+                }
+            };
+
+            const progress = (stats.total / stats.target) * 100;
+
+            return (
+                <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50">
+                    <header className="bg-white shadow-lg">
+                        <div className="max-w-6xl mx-auto px-4 py-6">
+                            <div className="flex items-center justify-between flex-wrap gap-4">
+                                <div className="flex items-center gap-3">
+                                    <Heart className="w-10 h-10 text-emerald-600 fill-emerald-600" />
+                                    <div>
+                                        <h1 className="text-3xl font-bold text-gray-800">جمعية الخير والإحسان</h1>
+                                        <p className="text-gray-600">معًا نصنع الفرق</p>
+                                    </div>
+                                </div>
+                                <button
+                                    onClick={() => setShowContact(true)}
+                                    className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white px-8 py-3 rounded-full font-bold text-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 flex items-center gap-2"
+                                >
+                                    <Heart className="w-5 h-5" />
+                                    تبرع الآن
+                                </button>
+                            </div>
+                        </div>
+                    </header>
+
+                    {showContact && (
+                        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                            <div className="bg-white rounded-2xl p-8 max-w-md w-full shadow-2xl">
+                                <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">طرق التواصل والتبرع</h2>
+                                
+                                <div className="space-y-4">
+                                    <a href="tel:+201234567890" className="flex items-center gap-4 p-4 bg-emerald-50 rounded-xl hover:bg-emerald-100 transition-colors">
+                                        <Phone className="w-6 h-6 text-emerald-600" />
+                                        <div>
+                                            <p className="font-semibold text-gray-800">اتصل بنا</p>
+                                            <p className="text-gray-600">+20 123 456 7890</p>
+                                        </div>
+                                    </a>
+
+                                    <a href="https://wa.me/201234567890" target="_blank" rel="noopener noreferrer" className="flex items-center gap-4 p-4 bg-green-50 rounded-xl hover:bg-green-100 transition-colors">
+                                        <MessageCircle className="w-6 h-6 text-green-600" />
+                                        <div>
+                                            <p className="font-semibold text-gray-800">واتساب</p>
+                                            <p className="text-gray-600">تواصل مباشر</p>
+                                        </div>
+                                    </a>
+
+                                    <a href="mailto:info@charity.org" className="flex items-center gap-4 p-4 bg-blue-50 rounded-xl hover:bg-blue-100 transition-colors">
+                                        <Mail className="w-6 h-6 text-blue-600" />
+                                        <div>
+                                            <p className="font-semibold text-gray-800">البريد الإلكتروني</p>
+                                            <p className="text-gray-600">info@charity.org</p>
+                                        </div>
+                                    </a>
+
+                                    <a href="https://facebook.com/your-charity" target="_blank" rel="noopener noreferrer" className="flex items-center gap-4 p-4 bg-indigo-50 rounded-xl hover:bg-indigo-100 transition-colors">
+                                        <Facebook className="w-6 h-6 text-indigo-600" />
+                                        <div>
+                                            <p className="font-semibold text-gray-800">فيسبوك</p>
+                                            <p className="text-gray-600">تابعنا على فيسبوك</p>
+                                        </div>
+                                    </a>
+                                </div>
+
+                                <button
+                                    onClick={() => setShowContact(false)}
+                                    className="mt-6 w-full bg-gray-200 text-gray-800 py-3 rounded-xl font-semibold hover:bg-gray-300 transition-colors"
+                                >
+                                    إغلاق
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
+                    <main className="max-w-6xl mx-auto px-4 py-12">
+                        {loading ? (
+                            <div className="text-center py-12">
+                                <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"></div>
+                                <p className="mt-4 text-gray-600">جاري تحميل البيانات...</p>
+                            </div>
+                        ) : (
+                            <>
+                                <div className="grid md:grid-cols-3 gap-6 mb-12">
+                                    <div className="bg-white rounded-2xl p-6 shadow-lg border-r-4 border-emerald-500">
+                                        <div className="flex items-center justify-between">
+                                            <div>
+                                                <p className="text-gray-600 mb-2">إجمالي التبرعات</p>
+                                                <p className="text-3xl font-bold text-gray-800">{stats.total.toLocaleString()} جنيه</p>
+                                            </div>
+                                            <DollarSign className="w-12 h-12 text-emerald-600" />
+                                        </div>
+                                    </div>
+
+                                    <div className="bg-white rounded-2xl p-6 shadow-lg border-r-4 border-teal-500">
+                                        <div className="flex items-center justify-between">
+                                            <div>
+                                                <p className="text-gray-600 mb-2">عدد المتبرعين</p>
+                                                <p className="text-3xl font-bold text-gray-800">{stats.donors}</p>
+                                            </div>
+                                            <Users className="w-12 h-12 text-teal-600" />
+                                        </div>
+                                    </div>
+
+                                    <div className="bg-white rounded-2xl p-6 shadow-lg border-r-4 border-cyan-500">
+                                        <div className="flex items-center justify-between">
+                                            <div>
+                                                <p className="text-gray-600 mb-2">نسبة الإنجاز</p>
+                                                <p className="text-3xl font-bold text-gray-800">{progress.toFixed(1)}%</p>
+                                            </div>
+                                            <TrendingUp className="w-12 h-12 text-cyan-600" />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="bg-white rounded-2xl p-8 shadow-lg mb-12">
+                                    <div className="flex justify-between items-center mb-4">
+                                        <h3 className="text-xl font-bold text-gray-800">تقدم الحملة</h3>
+                                        <span className="text-gray-600">الهدف: {stats.target.toLocaleString()} جنيه</span>
+                                    </div>
+                                    <div className="w-full bg-gray-200 rounded-full h-6 overflow-hidden">
+                                        <div
+                                            className="bg-gradient-to-r from-emerald-600 to-teal-600 h-full rounded-full transition-all duration-1000 flex items-center justify-end px-3"
+                                            style={{ width: `${Math.min(progress, 100)}%` }}
+                                        >
+                                            {progress > 5 && (
+                                                <span className="text-white text-sm font-bold">{progress.toFixed(0)}%</span>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="bg-white rounded-2xl p-8 shadow-lg">
+                                    <div className="flex justify-between items-center mb-6">
+                                        <h3 className="text-2xl font-bold text-gray-800">آخر التبرعات</h3>
+                                        <button
+                                            onClick={fetchDonations}
+                                            className="bg-emerald-100 text-emerald-700 px-4 py-2 rounded-lg font-semibold hover:bg-emerald-200 transition-colors"
+                                        >
+                                            تحديث
+                                        </button>
+                                    </div>
+                                    <div className="space-y-4">
+                                        {donations.length > 0 ? (
+                                            donations.map((donation, index) => (
+                                                <div key={index} className="flex items-center justify-between p-4 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl">
+                                                    <div className="flex items-center gap-4">
+                                                        <div className="w-12 h-12 bg-emerald-600 rounded-full flex items-center justify-center">
+                                                            <Heart className="w-6 h-6 text-white fill-white" />
+                                                        </div>
+                                                        <div>
+                                                            <p className="font-semibold text-gray-800">{donation.name}</p>
+                                                            <p className="text-sm text-gray-600">{donation.date}</p>
+                                                        </div>
+                                                    </div>
+                                                    <div className="text-left">
+                                                        <p className="text-2xl font-bold text-emerald-600">{donation.amount}</p>
+                                                        <p className="text-sm text-gray-600">جنيه</p>
+                                                    </div>
+                                                </div>
+                                            ))
+                                        ) : (
+                                            <p className="text-center text-gray-500 py-8">لا توجد تبرعات بعد</p>
+                                        )}
+                                    </div>
+                                </div>
+                            </>
+                        )}
+                    </main>
+
+                    <footer className="bg-white mt-12 py-8 border-t">
+                        <div className="max-w-6xl mx-auto px-4 text-center">
+                            <p className="text-gray-600">جمعية الخير والإحسان © 2025 - جميع الحقوق محفوظة</p>
+                            <p className="text-gray-500 mt-2">معًا نبني مستقبلًا أفضل</p>
+                        </div>
+                    </footer>
+                </div>
+            );
+        }
+
+        lucide.createIcons();
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<CharityPage />);
+    </script>
+</body>
+</html>
